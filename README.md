@@ -1,5 +1,5 @@
 # Commit-Increment
-Commit-Increment is a GitHub Action that identifies the increment level from conventional commit messages. It can also be used as a standalone Go library.
+Commit-Increment is a Go library and a GitHub Action that identifies the increment level from conventional commit messages.
 
 ## GitHub Action
 
@@ -14,6 +14,7 @@ The Commit Increment Action determines the version increment level based on comm
 ### Outputs
 
 - `increment_level`: The determined version increment level.
+- Possible ouputs: `major`, `minor` and defaults to `patch` when there is no match
 
 ### Example usage
 
@@ -31,8 +32,22 @@ steps:
 ```
 
 ### Suggested pattern set
-Conventional Commit (link)
-  Choose your desired keywords
-Simplified
-Complex
+#### Opinionated [Conventional Commit](https://conventionalcommits.org/en/v1.0.0/)
+```yaml
+major_pattern: "^((build|ci|docs|feat|fix|perf|refactor|test)(\([a-z 0-9,.\-]+\))?!: [\w \(\),:.;\-#&']+|\nBREAKING CHANGES: [\w \(\),:.;\-#&']+)$"  
+# See https://regex101.com/r/ORB9yp/1
+minor_pattern: "^(feat)(\([a-z 0-9,.\-]+\))?!?: [\w \(\),:.;\-#&']+$"  
+# See https://regex101.com/r/pBspGO/1
+```
 
+#### Simplified [Conventional Commit](https://conventionalcommits.org/en/v1.0.0/)
+```yaml
+major_pattern: ".*!:.*"  
+minor_pattern: "^feat:.*:"  
+```
+
+#### Simple pattern
+```yaml
+major_pattern: "Major:"  
+minor_pattern: "Minor:"  
+```
