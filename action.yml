@@ -20,7 +20,7 @@ runs:
   using: 'composite'
   steps:
     - name: Set up Go 1.x
-      if: ${{ install_go }} == 'true'
+      if: ${{ inputs.install_go }} == 'true'
       uses: actions/setup-go@v5
       with:
         go-version: ^1.22
