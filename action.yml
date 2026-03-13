@@ -26,5 +26,5 @@ runs:
         go-version: ^1.22
     - id: set-output
       run: |
-        echo "::set-output name=increment_level::$(go run main.go "${{ github.event.head_commit.message }}" "${{ inputs.major_pattern }}" "${{ inputs.minor_pattern }}")"
+        echo "::set-output name=increment_level::$(go run main.go --commit "${{ github.event.head_commit.message }}" --major "${{ inputs.major_pattern }}" --minor "${{ inputs.minor_pattern }}")"
       shell: bash
