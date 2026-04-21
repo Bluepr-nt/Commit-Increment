@@ -2,11 +2,11 @@ name: 'Commit Increment Action'
 description: 'Determine version increment level based on commit message'
 inputs:
   major_pattern:
-    description: 'Pattern for major version increment'
+    description: 'Regex pattern for major version increment'
     required: true
     default: 'MAJOR:'
   minor_pattern:
-    description: 'Pattern for minor version increment'
+    description: 'Regex pattern for minor version increment'
     required: true
     default: 'MINOR:'
   install_go:
@@ -20,11 +20,16 @@ runs:
   using: 'composite'
   steps:
     - name: Set up Go 1.x
-      if: ${{ inputs.install_go }} == 'true'
+      if: ${{ inputs.install_go == 'true' }}
       uses: actions/setup-go@v5
       with:
         go-version: ^1.22
     - id: set-output
+      working-directory: ${{ github.action_path }}
       run: |
-        echo "::set-output name=increment_level::$(go run main.go --commit "${{ github.event.head_commit.message }}" --major "${{ inputs.major_pattern }}" --minor "${{ inputs.minor_pattern }}")"
+        echo "increment_level=$(go run main.go --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN")" >> "$GITHUB_OUTPUT"
       shell: bash
+      env:
+        COMMIT_MSG: ${{ github.event.head_commit.message }}
+        MAJOR_PATTERN: ${{ inputs.major_pattern }}
+        MINOR_PATTERN: ${{ inputs.minor_pattern }}

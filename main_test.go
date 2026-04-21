@@ -35,21 +35,21 @@ func TestMain(t *testing.T) {
 			expectedOutput: "patch",
 		},
 		{
-			name:           "Test case for major increment",
+			name:           "Major increment with regex pattern",
 			commitMessage:  "feat!: introduce a breaking change",
 			majorPattern:   ".*!.*",
 			minorPattern:   "^feat.*",
 			expectedOutput: "major",
 		},
 		{
-			name:           "Test case for minor increment",
+			name:           "Minor increment with regex pattern",
 			commitMessage:  "feat: introduce a new feature",
 			majorPattern:   ".*!.*",
 			minorPattern:   "^feat.*",
 			expectedOutput: "minor",
 		},
 		{
-			name:           "Test case for patch increment",
+			name:           "Patch increment with regex pattern",
 			commitMessage:  "fix: fix a bug",
 			majorPattern:   ".*!.*",
 			minorPattern:   "^feat.*",
@@ -81,6 +81,48 @@ func TestMain(t *testing.T) {
 			result := buffer.String()
 			if result != tc.expectedOutput {
 				t.Fatalf("expected \"%s\" but got \"%s\"", tc.expectedOutput, result)
+			}
+		})
+	}
+}
+
+func TestInvalidRegexPatterns(t *testing.T) {
+	testCases := []struct {
+		name         string
+		majorPattern string
+		minorPattern string
+	}{
+		{
+			name:         "Invalid major pattern",
+			majorPattern: "[invalid",
+			minorPattern: "valid",
+		},
+		{
+			name:         "Invalid minor pattern",
+			majorPattern: "valid",
+			minorPattern: "[invalid",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			rootCmd, err := newRootCmd()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rootCmd.SetArgs([]string{
+				"--commit", "some commit message",
+				"--major", tc.majorPattern,
+				"--minor", tc.minorPattern,
+			})
+
+			buffer := new(bytes.Buffer)
+			rootCmd.SetOut(buffer)
+			rootCmd.SetErr(buffer)
+
+			if err := rootCmd.Execute(); err == nil {
+				t.Fatal("expected error for invalid regex pattern, but got none")
 			}
 		})
 	}
