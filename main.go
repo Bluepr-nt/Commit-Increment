@@ -12,15 +12,21 @@ func newRootCmd() (*cobra.Command, error) {
 	var rootCmd = &cobra.Command{
 		Use:   "increment",
 		Short: "Determine version increment level based on commit message",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			commitMessage, _ := cmd.Flags().GetString("commit")
 			majorPattern, _ := cmd.Flags().GetString("major")
 			minorPattern, _ := cmd.Flags().GetString("minor")
 
 			incrementLevel := "patch"
 
-			majorRegex, _ := regexp.Compile(majorPattern)
-			minorRegex, _ := regexp.Compile(minorPattern)
+			majorRegex, err := regexp.Compile(majorPattern)
+			if err != nil {
+				return fmt.Errorf("invalid major pattern: %w", err)
+			}
+			minorRegex, err := regexp.Compile(minorPattern)
+			if err != nil {
+				return fmt.Errorf("invalid minor pattern: %w", err)
+			}
 
 			if majorRegex.MatchString(commitMessage) {
 				incrementLevel = "major"
@@ -29,6 +35,7 @@ func newRootCmd() (*cobra.Command, error) {
 			}
 
 			cmd.Print(incrementLevel)
+			return nil
 		},
 	}
 
