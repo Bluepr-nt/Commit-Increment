@@ -27,7 +27,8 @@ runs:
     - id: set-output
       working-directory: ${{ github.action_path }}
       run: |
-        echo "increment_level=$(go run main.go --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN")" >> "$GITHUB_OUTPUT"
+        level="$(go run main.go --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN")"
+        echo "increment_level=$level" >> "$GITHUB_OUTPUT
       shell: bash
       env:
         COMMIT_MSG: ${{ github.event.head_commit.message }}
