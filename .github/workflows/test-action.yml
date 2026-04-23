@@ -1,0 +1,55 @@
+name: Test Action
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  test-action:
+    name: Test action with real commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        id: increment
+        with:
+          major_pattern: 'MAJOR:'
+          minor_pattern: 'MINOR:'
+      - name: Verify output is valid
+        run: |
+          level="${{ steps.increment.outputs.increment_level }}"
+          echo "increment_level=$level"
+          case "$level" in
+            major|minor|patch) echo "Valid increment level: $level" ;;
+            *) echo "Invalid increment level: $level" && exit 1 ;;
+          esac
+
+  test-go-binary:
+    name: Test Go binary with controlled inputs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ^1.22
+      - name: Test major detection
+        run: |
+          level="$(go run main.go --commit 'MAJOR: breaking change' --major 'MAJOR:' --minor 'MINOR:')"
+          echo "level=$level"
+          test "$level" = "major"
+      - name: Test minor detection
+        run: |
+          level="$(go run main.go --commit 'MINOR: new feature' --major 'MAJOR:' --minor 'MINOR:')"
+          echo "level=$level"
+          test "$level" = "minor"
+      - name: Test patch fallback
+        run: |
+          level="$(go run main.go --commit 'fix: a small bug' --major 'MAJOR:' --minor 'MINOR:')"
+          echo "level=$level"
+          test "$level" = "patch"
+      - name: Test major takes precedence over minor
+        run: |
+          level="$(go run main.go --commit 'MAJOR: MINOR: both present' --major 'MAJOR:' --minor 'MINOR:')"
+          echo "level=$level"
+          test "$level" = "major"
