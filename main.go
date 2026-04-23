@@ -46,17 +46,17 @@ func newRootCmd() (*cobra.Command, error) {
 	rootCmd.Flags().StringP("minor", "n", "", "Minor pattern")
 
 	if err := rootCmd.MarkFlagRequired("commit"); err != nil {
-		rootCmd.Println("Error marking 'commit' flag as required:", err)
+		rootCmd.PrintErrf("Error marking 'commit' flag as required: %v\n", err)
 		return nil, err
 	}
 
 	if err := rootCmd.MarkFlagRequired("major"); err != nil {
-		rootCmd.Println("Error marking 'major' flag as required:", err)
+		rootCmd.PrintErrf("Error marking 'major' flag as required: %v\n", err)
 		return nil, err
 	}
 
 	if err := rootCmd.MarkFlagRequired("minor"); err != nil {
-		rootCmd.Println("Error marking 'minor' flag as required:", err)
+		rootCmd.PrintErrf("Error marking 'minor' flag as required: %v\n", err)
 		return nil, err
 	}
 	return rootCmd, nil
@@ -65,12 +65,12 @@ func newRootCmd() (*cobra.Command, error) {
 func main() {
 	rootCmd, err := newRootCmd()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintf(os.Stderr, "Error creating command: %v\n", err)
 		os.Exit(1)
 	}
 
 	if err := rootCmd.Execute(); err != nil {
-		rootCmd.Println(err)
+		rootCmd.PrintErrf("Error executing command: %v\n", err)
 		os.Exit(1)
 	}
 }
