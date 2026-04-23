@@ -35,21 +35,21 @@ jobs:
           go-version: ^1.22
       - name: Test major detection
         run: |
-          level="$(go run main.go --commit "MAJOR: breaking change" --major "MAJOR:" --minor "MINOR:")"
+          level="$(go run main.go --commit 'MAJOR: breaking change' --major 'MAJOR:' --minor 'MINOR:')"
           echo "level=$level"
           test "$level" = "major"
       - name: Test minor detection
         run: |
-          level="$(go run main.go --commit "MINOR: new feature" --major "MAJOR:" --minor "MINOR:")"
+          level="$(go run main.go --commit 'MINOR: new feature' --major 'MAJOR:' --minor 'MINOR:')"
           echo "level=$level"
           test "$level" = "minor"
       - name: Test patch fallback
         run: |
-          level="$(go run main.go --commit "fix: a small bug" --major "MAJOR:" --minor "MINOR:")"
+          level="$(go run main.go --commit 'fix: a small bug' --major 'MAJOR:' --minor 'MINOR:')"
           echo "level=$level"
           test "$level" = "patch"
       - name: Test major takes precedence over minor
         run: |
-          level="$(go run main.go --commit "MAJOR: MINOR: both present" --major "MAJOR:" --minor "MINOR:")"
+          level="$(go run main.go --commit 'MAJOR: MINOR: both present' --major 'MAJOR:' --minor 'MINOR:')"
           echo "level=$level"
           test "$level" = "major"
