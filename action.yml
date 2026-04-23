@@ -27,7 +27,7 @@ runs:
     - id: set-output
       working-directory: ${{ github.action_path }}
       run: |
-        level=$(go run main.go --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN")
+        level="$(go run main.go --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN")"
         echo "increment_level=$level" >> $GITHUB_OUTPUT
         echo "increment_level=$level"
       shell: bash

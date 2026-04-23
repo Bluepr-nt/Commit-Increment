@@ -13,6 +13,8 @@ func newRootCmd() (*cobra.Command, error) {
 		Use:   "increment",
 		Short: "Determine version increment level based on commit message",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			cmd.SetOut(os.Stdout)
+			cmd.SetErr(os.Stderr)
 			commitMessage, _ := cmd.Flags().GetString("commit")
 			majorPattern, _ := cmd.Flags().GetString("major")
 			minorPattern, _ := cmd.Flags().GetString("minor")
