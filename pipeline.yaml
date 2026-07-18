@@ -1,0 +1,44 @@
+blueprint_vars:
+  product_name: commit-increment
+product_data:
+  name: commit-increment
+tasks:
+  - name: build-cli
+    type: build
+    build:
+      environment: docker:go:1.26
+      command: go build -o build-artefacts/ .
+  - name: test
+    type: test
+    test:
+      environment: docker:go:1.26
+      command: go test -v ./...
+  - name: lint
+    type: test
+    test:
+      environment: golangci/golangci-lint:latest
+      command: golangci-lint run
+  - name: alpha-release
+    type: release
+    needs:
+      - build-cli
+      - test
+      - lint
+    triggers:
+      - pull_request
+    release:
+      stream: '*.*.*-alpha.*'
+      type: pre-release
+      increment-type: conventional-commits
+  - name: release
+    type: release
+    needs:
+      - test
+      - lint
+      - build-cli
+    triggers:
+      - push:main
+    release:
+      stream: '*.*.*'
+      type: release
+      increment-type: conventional-commits
