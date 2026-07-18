@@ -2,7 +2,7 @@ name: Test Action
 
 on:
   push:
-    branches: ['**']
+    branches: ['main']
   pull_request:
 
 jobs:
@@ -38,6 +38,8 @@ jobs:
           level="$(go run main.go --commit 'MAJOR: breaking change' --major 'MAJOR:' --minor 'MINOR:')"
           echo "level=$level"
           test "$level" = "major"
+      - name: Test minor detection
+        run: |
           level="$(go run main.go --commit 'MINOR: new feature' --major 'MAJOR:' --minor 'MINOR:')"
           echo "level=$level"
           test "$level" = "minor"
