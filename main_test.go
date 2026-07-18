@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"testing"
 )
 
@@ -59,22 +60,20 @@ func TestMain(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			rootCmd, err := newRootCmd()
-			if err != nil {
-				t.Fatal(err)
-			}
+			rootCmd := newRootCmd()
 
-			rootCmd.SetArgs([]string{
+			args := []string{
+				"increment",
 				"--commit", tc.commitMessage,
 				"--major", tc.majorPattern,
 				"--minor", tc.minorPattern,
-			})
+			}
 
 			buffer := new(bytes.Buffer)
-			rootCmd.SetOut(buffer)
-			rootCmd.SetErr(buffer)
+			rootCmd.Writer = buffer
+			rootCmd.ErrWriter = buffer
 
-			if err := rootCmd.Execute(); err != nil {
+			if err := rootCmd.Run(context.Background(), args); err != nil {
 				t.Fatal(err)
 			}
 
@@ -106,22 +105,20 @@ func TestInvalidRegexPatterns(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			rootCmd, err := newRootCmd()
-			if err != nil {
-				t.Fatal(err)
-			}
+			rootCmd := newRootCmd()
 
-			rootCmd.SetArgs([]string{
+			args := []string{
+				"increment",
 				"--commit", "some commit message",
 				"--major", tc.majorPattern,
 				"--minor", tc.minorPattern,
-			})
+			}
 
 			buffer := new(bytes.Buffer)
-			rootCmd.SetOut(buffer)
-			rootCmd.SetErr(buffer)
+			rootCmd.Writer = buffer
+			rootCmd.ErrWriter = buffer
 
-			if err := rootCmd.Execute(); err == nil {
+			if err := rootCmd.Run(context.Background(), args); err == nil {
 				t.Fatal("expected error for invalid regex pattern, but got none")
 			}
 		})

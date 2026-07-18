@@ -1,23 +1,28 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 
-	"github.com/spf13/cobra"
+	"github.com/urfave/cli/v3"
 )
 
-func newRootCmd() (*cobra.Command, error) {
-	var rootCmd = &cobra.Command{
-		Use:   "increment",
-		Short: "Determine version increment level based on commit message",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cmd.SetOut(os.Stdout)
-			cmd.SetErr(os.Stderr)
-			commitMessage, _ := cmd.Flags().GetString("commit")
-			majorPattern, _ := cmd.Flags().GetString("major")
-			minorPattern, _ := cmd.Flags().GetString("minor")
+func newRootCmd() *cli.Command {
+	return &cli.Command{
+		Name:  "increment",
+		Usage: "Determine version increment level based on commit message",
+		Flags: []cli.Flag{
+			&cli.StringFlag{Name: "commit", Aliases: []string{"c"}, Usage: "Commit message", Required: true},
+			&cli.StringFlag{Name: "major", Aliases: []string{"m"}, Usage: "Major pattern", Required: true},
+			&cli.StringFlag{Name: "minor", Aliases: []string{"n"}, Usage: "Minor pattern", Required: true},
+		},
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			commitMessage := cmd.String("commit")
+			majorPattern := cmd.String("major")
+			minorPattern := cmd.String("minor")
 
 			incrementLevel := "patch"
 
@@ -36,41 +41,19 @@ func newRootCmd() (*cobra.Command, error) {
 				incrementLevel = "minor"
 			}
 
-			cmd.Print(incrementLevel)
-			return nil
+			_, err = io.WriteString(cmd.Writer, incrementLevel)
+			return err
 		},
 	}
-
-	rootCmd.Flags().StringP("commit", "c", "", "Commit message")
-	rootCmd.Flags().StringP("major", "m", "", "Major pattern")
-	rootCmd.Flags().StringP("minor", "n", "", "Minor pattern")
-
-	if err := rootCmd.MarkFlagRequired("commit"); err != nil {
-		rootCmd.PrintErrf("Error marking 'commit' flag as required: %v\n", err)
-		return nil, err
-	}
-
-	if err := rootCmd.MarkFlagRequired("major"); err != nil {
-		rootCmd.PrintErrf("Error marking 'major' flag as required: %v\n", err)
-		return nil, err
-	}
-
-	if err := rootCmd.MarkFlagRequired("minor"); err != nil {
-		rootCmd.PrintErrf("Error marking 'minor' flag as required: %v\n", err)
-		return nil, err
-	}
-	return rootCmd, nil
 }
 
 func main() {
-	rootCmd, err := newRootCmd()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating command: %v\n", err)
-		os.Exit(1)
-	}
+	rootCmd := newRootCmd()
+	rootCmd.Writer = os.Stdout
+	rootCmd.ErrWriter = os.Stderr
 
-	if err := rootCmd.Execute(); err != nil {
-		rootCmd.PrintErrf("Error executing command: %v\n", err)
+	if err := rootCmd.Run(context.Background(), os.Args); err != nil {
+		fmt.Fprintf(os.Stderr, "Error executing command: %v\n", err)
 		os.Exit(1)
 	}
 }
