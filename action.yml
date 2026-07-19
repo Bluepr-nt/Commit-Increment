@@ -12,6 +12,10 @@ inputs:
   install_go:
     description: 'Whether to install Go'
     default: 'true'
+  commit_message:
+    description: 'Commit message to analyze'
+    required: false
+    default: ${{ github.event.head_commit.message }}
 outputs:
   increment_level:
     description: 'Version increment level'
@@ -27,6 +31,15 @@ runs:
     - id: set-output
       working-directory: ${{ github.action_path }}
       run: |
+        # if commit_message input is provided, use it; if not and PR event, use PR title; else use head commit message
+        if [[ -n "${{ inputs.commit_message }}" ]]; then
+          COMMIT_MSG="${{ inputs.commit_message }}"
+        elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          COMMIT_MSG="${{ github.event.pull_request.title }}"
+        else
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+        fi
+        echo "COMMIT_MSG=$COMMIT_MSG"
         level="$(go run main.go --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN")"
         echo "increment_level=$level" >> $GITHUB_OUTPUT
         echo "increment_level=$level"
