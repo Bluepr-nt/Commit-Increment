@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -25,13 +26,15 @@ func newRootCmd() *cli.Command {
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			logger := zerolog.New(cmd.ErrWriter).With().Timestamp().Str("command", cmd.Name).Logger()
 
-			commitMessage := cmd.String("commit")
+			commitMessage := normalizeCommitMessage(cmd.String("commit"))
+			commitSubject := commitSubject(commitMessage)
 			majorPattern := cmd.String("major")
 			minorPattern := cmd.String("minor")
 			encodedMajorPattern := base64.StdEncoding.EncodeToString([]byte(majorPattern))
 			encodedMinorPattern := base64.StdEncoding.EncodeToString([]byte(minorPattern))
 			logger.Info().
 				Str("commit_message", commitMessage).
+				Str("commit_subject", commitSubject).
 				Str("major_pattern", encodedMajorPattern).
 				Str("minor_pattern", encodedMinorPattern).
 				Msg("processing increment request")
@@ -49,9 +52,9 @@ func newRootCmd() *cli.Command {
 				return fmt.Errorf("invalid minor pattern: %w", err)
 			}
 
-			if majorRegex.MatchString(commitMessage) {
+			if majorRegex.MatchString(commitMessage) || majorRegex.MatchString(commitSubject) {
 				incrementLevel = "major"
-			} else if minorRegex.MatchString(commitMessage) {
+			} else if minorRegex.MatchString(commitSubject) || minorRegex.MatchString(commitMessage) {
 				incrementLevel = "minor"
 			}
 			logger.Info().Str("increment_level", incrementLevel).Msg("calculated increment level")
@@ -63,6 +66,18 @@ func newRootCmd() *cli.Command {
 			return err
 		},
 	}
+}
+
+func normalizeCommitMessage(commitMessage string) string {
+	return strings.ReplaceAll(commitMessage, "\r\n", "\n")
+}
+
+func commitSubject(commitMessage string) string {
+	if idx := strings.IndexByte(commitMessage, '\n'); idx >= 0 {
+		return commitMessage[:idx]
+	}
+
+	return commitMessage
 }
 
 func main() {

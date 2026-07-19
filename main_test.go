@@ -57,6 +57,20 @@ func TestMain(t *testing.T) {
 			minorPattern:   "^feat.*",
 			expectedOutput: "patch",
 		},
+		{
+			name:           "Minor increment with multiline commit message",
+			commitMessage:  "feat: introduce a new feature\n\nadditional context for the change",
+			majorPattern:   ".*!:.*|BREAKING CHANGE:",
+			minorPattern:   "^feat(\\(.+\\))?: .*$",
+			expectedOutput: "minor",
+		},
+		{
+			name:           "Major increment with breaking change in body",
+			commitMessage:  "feat: introduce a new feature\n\nBREAKING CHANGE: incompatible API update",
+			majorPattern:   "BREAKING CHANGE:",
+			minorPattern:   "^feat(\\(.+\\))?: .*$",
+			expectedOutput: "major",
+		},
 	}
 
 	for _, tc := range testCases {
