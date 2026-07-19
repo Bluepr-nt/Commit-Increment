@@ -48,5 +48,5 @@ runs:
       shell: bash
       env:
         COMMIT_MSG: ${{ github.event.head_commit.message }}
-        MAJOR_PATTERN: ${{ inputs.major_pattern }}
-        MINOR_PATTERN: ${{ inputs.minor_pattern }}
+        MAJOR_PATTERN: '${{ inputs.major_pattern }}'
+        MINOR_PATTERN: '${{ inputs.minor_pattern }}'
