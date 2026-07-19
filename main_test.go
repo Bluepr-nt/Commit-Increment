@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"io"
 	"testing"
 )
 
@@ -71,7 +72,7 @@ func TestMain(t *testing.T) {
 
 			buffer := new(bytes.Buffer)
 			rootCmd.Writer = buffer
-			rootCmd.ErrWriter = buffer
+			rootCmd.ErrWriter = io.Discard
 
 			if err := rootCmd.Run(context.Background(), args); err != nil {
 				t.Fatal(err)
@@ -116,7 +117,7 @@ func TestInvalidRegexPatterns(t *testing.T) {
 
 			buffer := new(bytes.Buffer)
 			rootCmd.Writer = buffer
-			rootCmd.ErrWriter = buffer
+			rootCmd.ErrWriter = io.Discard
 
 			if err := rootCmd.Run(context.Background(), args); err == nil {
 				t.Fatal("expected error for invalid regex pattern, but got none")
