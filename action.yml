@@ -40,6 +40,8 @@ runs:
           COMMIT_MSG="${{ github.event.head_commit.message }}"
         fi
         echo "COMMIT_MSG=$COMMIT_MSG"
+        echo "MAJOR_PATTERN=${{ inputs.major_pattern }}"
+        echo "MINOR_PATTERN=${{ inputs.minor_pattern }}"
         level="$(go run main.go --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN")"
         echo "increment_level=$level" >> $GITHUB_OUTPUT
         echo "increment_level=$level"
