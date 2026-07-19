@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"os"
@@ -27,22 +28,24 @@ func newRootCmd() *cli.Command {
 			commitMessage := cmd.String("commit")
 			majorPattern := cmd.String("major")
 			minorPattern := cmd.String("minor")
+			encodedMajorPattern := base64.StdEncoding.EncodeToString([]byte(majorPattern))
+			encodedMinorPattern := base64.StdEncoding.EncodeToString([]byte(minorPattern))
 			logger.Info().
-				Int("commit_message_length", len(commitMessage)).
-				Str("major_pattern", majorPattern).
-				Str("minor_pattern", minorPattern).
+				Str("commit_message", commitMessage).
+				Str("major_pattern", encodedMajorPattern).
+				Str("minor_pattern", encodedMinorPattern).
 				Msg("processing increment request")
 
 			incrementLevel := "patch"
 
 			majorRegex, err := regexp.Compile(majorPattern)
 			if err != nil {
-				logger.Error().Err(err).Str("pattern", majorPattern).Msg("failed to compile major pattern")
+				logger.Error().Err(err).Str("pattern", encodedMajorPattern).Msg("failed to compile major pattern")
 				return fmt.Errorf("invalid major pattern: %w", err)
 			}
 			minorRegex, err := regexp.Compile(minorPattern)
 			if err != nil {
-				logger.Error().Err(err).Str("pattern", minorPattern).Msg("failed to compile minor pattern")
+				logger.Error().Err(err).Str("pattern", encodedMinorPattern).Msg("failed to compile minor pattern")
 				return fmt.Errorf("invalid minor pattern: %w", err)
 			}
 
