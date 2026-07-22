@@ -1,0 +1,40 @@
+FROM ubuntu:24.04
+
+ARG RUNNER_VERSION=2.335.1
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV GITHUB_ORG=Bluepr-nt
+ENV RUNNER_GROUP=default
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    jq \
+    libicu74 \
+    sudo \
+    tar \
+    unzip \
+    libdigest-sha-perl \
+  && rm -rf /var/lib/apt/lists/* \
+  && useradd -m -d /home/runner -s /bin/bash runner \
+  && mkdir -p /home/runner/actions-runner \
+  && chown -R runner:runner /home/runner
+
+USER runner
+WORKDIR /home/runner/actions-runner
+
+RUN archive_name="actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" \
+  && curl -fsSL -o "${archive_name}" \
+    "https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/${archive_name}" \
+  && echo "4ef2f25285f0ae4477f1fe1e346db76d2f3ebf03824e2ddd1973a2819bf6c8cf  ${archive_name}" | shasum -a 256 -c \
+  && tar xzf "${archive_name}" \
+  && rm "${archive_name}"
+
+USER root
+RUN /home/runner/actions-runner/bin/installdependencies.sh
+
+COPY runner-entrypoint.sh /runner-entrypoint.sh
+RUN chmod +x /runner-entrypoint.sh
+
+USER runner
+ENTRYPOINT ["/runner-entrypoint.sh"]
