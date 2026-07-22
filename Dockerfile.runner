@@ -1,6 +1,7 @@
 FROM ubuntu:24.04
 
 ARG RUNNER_VERSION=2.335.1
+ARG GO_VERSION=1.26.5
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GITHUB_ORG=Bluepr-nt
@@ -32,6 +33,17 @@ RUN archive_name="actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" \
 
 USER root
 RUN /home/runner/actions-runner/bin/installdependencies.sh
+
+RUN curl -fsSL "https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz" -o /tmp/go.tar.gz \
+  && tar -C /usr/local -xzf /tmp/go.tar.gz \
+  && rm /tmp/go.tar.gz \
+  && /usr/local/go/bin/go install github.com/go-delve/delve/cmd/dlv@latest \
+  && mv /root/go/bin/dlv /usr/local/bin/dlv \
+  && rm -rf /root/go /root/.cache
+
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+EXPOSE 40000
 
 COPY runner-entrypoint.sh /runner-entrypoint.sh
 RUN chmod +x /runner-entrypoint.sh

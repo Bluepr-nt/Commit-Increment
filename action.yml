@@ -39,12 +39,20 @@ runs:
         else
           COMMIT_MSG="${{ github.event.head_commit.message }}"
         fi
+
         echo "COMMIT_MSG=$COMMIT_MSG"
         echo "MAJOR_PATTERN=${{ inputs.major_pattern }}"
         echo "MINOR_PATTERN=${{ inputs.minor_pattern }}"
-        level="$(go run main.go --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN")"
-        echo "increment_level=$level" >> $GITHUB_OUTPUT
-        echo "increment_level=$level"
+
+        if [[ "${DEBUG_DLV:-}" == "true" ]]; then
+          echo "Starting dlv headless on :40000 — connect VS Code before the process exits"
+          dlv debug main.go --headless --listen=:40000 --api-version=2 --accept-multiclient \
+            -- --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN"
+        else
+          level="$(go run main.go --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN")"
+          echo "increment_level=$level" >> $GITHUB_OUTPUT
+          echo "increment_level=$level"
+        fi
       shell: bash
       env:
         COMMIT_MSG: ${{ github.event.head_commit.message }}

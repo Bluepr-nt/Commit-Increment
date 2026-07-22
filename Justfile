@@ -40,6 +40,19 @@ runner-run name='gh-org-runner-1' labels='docker,linux,x64' group='Default':
         -e RUNNER_GROUP="{{group}}" \
         gh-org-runner
 
+# Run the GitHub org runner container with dlv debug port exposed (attach VS Code to localhost:40000)
+runner-debug name='gh-org-runner-debug' labels='docker,linux,x64' group='Default':
+    test -n "$GH_PAT" || (echo "GH_PAT is required" && exit 1)
+    docker run \
+        --name {{name}} \
+        -e GH_PAT="$GH_PAT" \
+        -e RUNNER_NAME="{{name}}" \
+        -e RUNNER_LABELS="{{labels}}" \
+        -e RUNNER_GROUP="{{group}}" \
+        -e DEBUG_DLV=true \
+        -p 40000:40000 \
+        gh-org-runner
+
 # Format code
 fmt:
     go fmt ./...
