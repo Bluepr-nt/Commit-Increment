@@ -28,8 +28,8 @@ func newRootCmd() *cli.Command {
 
 			commitMessage := normalizeCommitMessage(cmd.String("commit"))
 			commitSubject := commitSubject(commitMessage)
-			majorPattern := cmd.String("major")
-			minorPattern := cmd.String("minor")
+			majorPattern := strings.TrimSpace(cmd.String("major"))
+			minorPattern := strings.TrimSpace(cmd.String("minor"))
 			encodedMajorPattern := base64.StdEncoding.EncodeToString([]byte(majorPattern))
 			encodedMinorPattern := base64.StdEncoding.EncodeToString([]byte(minorPattern))
 			logger.Info().

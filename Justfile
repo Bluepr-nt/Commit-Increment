@@ -32,7 +32,8 @@ runner-build:
 # Run the GitHub org runner container (requires GH_PAT env vars)
 runner-run name='gh-org-runner-1' labels='docker,linux,x64' group='Default':
     test -n "$GH_PAT" || (echo "GH_PAT is required" && exit 1)
-    docker run -d \
+    docker run \
+        --rm \
         --name {{name}} \
         -e GH_PAT="$GH_PAT" \
         -e RUNNER_NAME="{{name}}" \
@@ -44,6 +45,7 @@ runner-run name='gh-org-runner-1' labels='docker,linux,x64' group='Default':
 runner-debug name='gh-org-runner-debug' labels='docker,linux,x64' group='Default':
     test -n "$GH_PAT" || (echo "GH_PAT is required" && exit 1)
     docker run \
+        --rm \
         --name {{name}} \
         -e GH_PAT="$GH_PAT" \
         -e RUNNER_NAME="{{name}}" \
