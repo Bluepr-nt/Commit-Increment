@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"io"
 	"testing"
 )
 
@@ -56,6 +57,20 @@ func TestMain(t *testing.T) {
 			minorPattern:   "^feat.*",
 			expectedOutput: "patch",
 		},
+		{
+			name:           "Minor increment with multiline commit message",
+			commitMessage:  "feat: introduce a new feature\n\nadditional context for the change",
+			majorPattern:   ".*!:.*|BREAKING CHANGE:",
+			minorPattern:   "^feat(\\(.+\\))?: .*$",
+			expectedOutput: "minor",
+		},
+		{
+			name:           "Major increment with breaking change in body",
+			commitMessage:  "feat: introduce a new feature\n\nBREAKING CHANGE: incompatible API update",
+			majorPattern:   "BREAKING CHANGE:",
+			minorPattern:   "^feat(\\(.+\\))?: .*$",
+			expectedOutput: "major",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -71,7 +86,7 @@ func TestMain(t *testing.T) {
 
 			buffer := new(bytes.Buffer)
 			rootCmd.Writer = buffer
-			rootCmd.ErrWriter = buffer
+			rootCmd.ErrWriter = io.Discard
 
 			if err := rootCmd.Run(context.Background(), args); err != nil {
 				t.Fatal(err)
@@ -116,7 +131,7 @@ func TestInvalidRegexPatterns(t *testing.T) {
 
 			buffer := new(bytes.Buffer)
 			rootCmd.Writer = buffer
-			rootCmd.ErrWriter = buffer
+			rootCmd.ErrWriter = io.Discard
 
 			if err := rootCmd.Run(context.Background(), args); err == nil {
 				t.Fatal("expected error for invalid regex pattern, but got none")

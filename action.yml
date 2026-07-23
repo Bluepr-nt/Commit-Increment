@@ -12,6 +12,10 @@ inputs:
   install_go:
     description: 'Whether to install Go'
     default: 'true'
+  commit_message:
+    description: 'Commit message to analyze'
+    required: false
+
 outputs:
   increment_level:
     description: 'Version increment level'
@@ -21,17 +25,36 @@ runs:
   steps:
     - name: Set up Go 1.x
       if: ${{ inputs.install_go == 'true' }}
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v7
       with:
-        go-version: ^1.22
+        go-version: ^1.26
     - id: set-output
       working-directory: ${{ github.action_path }}
       run: |
-        level="$(go run main.go --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN")"
-        echo "increment_level=$level" >> $GITHUB_OUTPUT
-        echo "increment_level=$level"
+        # if commit_message input is provided, use it; if not and PR event, use PR title; else use head commit message
+        if [[ -n "${{ inputs.commit_message }}" ]]; then
+          COMMIT_MSG="${{ inputs.commit_message }}"
+        elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          COMMIT_MSG="${{ github.event.pull_request.title }}"
+        else
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+        fi
+
+        echo "COMMIT_MSG=$COMMIT_MSG"
+        echo "MAJOR_PATTERN=${{ inputs.major_pattern }}"
+        echo "MINOR_PATTERN=${{ inputs.minor_pattern }}"
+
+        if [[ "${DEBUG_DLV:-}" == "true" ]]; then
+          echo "Starting dlv headless on :40000 — connect VS Code before the process exits"
+          dlv debug main.go --headless --listen=:40000 --api-version=2 --accept-multiclient \
+            -- --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN"
+        else
+          level="$(go run main.go --commit "$COMMIT_MSG" --major "$MAJOR_PATTERN" --minor "$MINOR_PATTERN")"
+          echo "increment_level=$level" >> $GITHUB_OUTPUT
+          echo "increment_level=$level"
+        fi
       shell: bash
       env:
         COMMIT_MSG: ${{ github.event.head_commit.message }}
-        MAJOR_PATTERN: ${{ inputs.major_pattern }}
-        MINOR_PATTERN: ${{ inputs.minor_pattern }}
+        MAJOR_PATTERN: '${{ inputs.major_pattern }}'
+        MINOR_PATTERN: '${{ inputs.minor_pattern }}'
