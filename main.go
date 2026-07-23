@@ -24,7 +24,15 @@ func newRootCmd() *cli.Command {
 			&cli.StringFlag{Name: "minor", Aliases: []string{"n"}, Usage: "Minor pattern", Required: true},
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			logger := zerolog.New(cmd.ErrWriter).With().Timestamp().Str("command", cmd.Name).Logger()
+			logLevelStr := os.Getenv("LOG_LEVEL")
+			if logLevelStr == "" {
+				logLevelStr = "error"
+			}
+			logLevel, err := zerolog.ParseLevel(logLevelStr)
+			if err != nil {
+				logLevel = zerolog.ErrorLevel
+			}
+			logger := zerolog.New(cmd.ErrWriter).Level(logLevel).With().Timestamp().Str("command", cmd.Name).Logger()
 
 			commitMessage := normalizeCommitMessage(cmd.String("commit"))
 			commitSubject := commitSubject(commitMessage)
@@ -83,7 +91,15 @@ func commitSubject(commitMessage string) string {
 }
 
 func main() {
-	log.Logger = zerolog.New(os.Stderr).With().Timestamp().Str("app", "commit-increment").Logger()
+	logLevelStr := os.Getenv("LOG_LEVEL")
+	if logLevelStr == "" {
+		logLevelStr = "error"
+	}
+	logLevel, err := zerolog.ParseLevel(logLevelStr)
+	if err != nil {
+		logLevel = zerolog.ErrorLevel
+	}
+	log.Logger = zerolog.New(os.Stderr).Level(logLevel).With().Timestamp().Str("app", "commit-increment").Logger()
 	log.Info().Msg("initializing command")
 
 	rootCmd := newRootCmd()
