@@ -61,7 +61,7 @@ jobs:
         repository: ${{ github.repository }}
     - name: Get Commit Version Increment
       id: commit_increment
-      uses: Bluepr-nt/Commit-Increment@0.0.0
+      uses: Bluepr-nt/Commit-Increment@main
       with:
         major_pattern: |
           ^((build|ci|docs|feat|fix|perf|refactor|test)(\([a-z 0-9,.\-]+\))?!: [\w \(\),:.;\-#&']+|\nBREAKING CHANGES: [\w \(\),:.;\-#&']+)$

@@ -11,7 +11,7 @@ jobs:
     - build-cli
     - test
     - lint
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
@@ -22,7 +22,7 @@ jobs:
         repository: ${{ github.repository }}
     - name: Get Commit Version Increment
       id: commit_increment
-      uses: Bluepr-nt/Commit-Increment@fix/commit-increment-to-support-both-PR-and-branch-head
+      uses: Bluepr-nt/Commit-Increment@main
       with:
         major_pattern: |
           ^((build|ci|docs|feat|fix|perf|refactor|test)(\([a-z 0-9,.\-]+\))?!: [\w \(\),:.;\-#&']+|\nBREAKING CHANGES: [\w \(\),:.;\-#&']+)$

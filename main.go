@@ -69,7 +69,9 @@ func newRootCmd() *cli.Command {
 }
 
 func normalizeCommitMessage(commitMessage string) string {
-	return strings.ReplaceAll(commitMessage, "\r\n", "\n")
+	msg := strings.TrimSpace(commitMessage)
+	msg = strings.ReplaceAll(msg, "\r\n", "\n")
+	return msg
 }
 
 func commitSubject(commitMessage string) string {
